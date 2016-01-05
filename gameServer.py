@@ -3,6 +3,37 @@ import sys
 import socket
 import threading
 
+#board object
+#O = open ocean
+#S = ship
+#H = hit location
+#M = miss location
+class board:
+    def __init__(self):
+        self.numShipLocations = 17
+        #create empty board
+        self.spaces = []
+        for i in range(10)
+            self.spaces.append([])
+            for j in range(10):
+                self.spaces(i).append("O")
+
+    #Put ship location on board
+    def set_ship_location(self, x: int, y: int):
+        self.spaces[x][y] = "S"
+
+    #Send hit or miss
+    def strike(self, x: int, y: int):
+        if(self.spaces[x][y] == "O" or self.spaces == "M"):
+            self.spaces[x][y] = "M"
+        else:
+            self.spaces[x][y] = "H"
+            self.numShipLocations -= 1
+
+    #return status of location
+    def get_location_status(self, x: int, y: int):
+        return self.spaces[x][y]
+
 def setup_game(player1Socket: socket.socket, player1Address, player2Socket: socket.socket, player2Address):
     sockets = []
     sockets.append(player1Socket)
