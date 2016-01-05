@@ -161,6 +161,7 @@ def main():
             attack()
 
     def attack():
+        #show boards
         print("Attack Board")
         print(" ")
         opponentsBoard.print_board()
@@ -168,6 +169,27 @@ def main():
         print("Your Board")
         print(" ")
         myBoard.print_board()
+        #get attack info
+        print(" ")
+        print("enter attack location (x <space> y")
+        attack_loc = input().split(" ")
+        attack_message = attack_loc[0] + "," +attack_loc[1] + "," + "end"
+        client_socket.send(attack_message.encode(encoding='utf-8'))
+
+        response = ""
+        while response.endswith("end") == False:
+            response = response + client_socket.recv(1024).decode(encoding='utf-8')
+        print(" ")
+        response = response.split("end")[0]
+        print("result: " + response)
+
+        if response == "M":
+            opponentsBoard.set_miss(int(attack_loc[0]), int(attack_loc[1]))
+
+        if response == "H":
+            opponentsBoard.set_hit(int(attack_loc[0]), int(attack_loc[1]))
+
+        wait_for_turn()
 
     if playerNum == "1":
         attack()

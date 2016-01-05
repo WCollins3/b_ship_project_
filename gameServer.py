@@ -34,6 +34,9 @@ class Board:
     def get_location_status(self, x: int, y: int):
         return self.spaces[x][y]
 
+    def get_board_health(self):
+        return self.numShipLocations
+
 def setup_game(player1Socket: socket.socket, player1Address, player2Socket: socket.socket, player2Address):
     sockets = []
     sockets.append(player1Socket)
@@ -97,6 +100,27 @@ def playGame(player1Socket: socket.socket, player1Address, player2Socket: socket
     #send ready message
     sockets[0].send("1end".encode(encoding='utf-8'))
     sockets[1].send("2end".encode(encoding='utf-8'))
+
+    currPlayer = 0
+    currOpponent = 1
+    while boards[0].get_board_health() != 0 and boards[1].get_board_health() != 0:
+        attack_message = ""
+        while attack_message.endswith("end") == False:
+            attack_message = attack_message + sockets[currPlayer].recv(1024).decode(encoding='utf-8')
+        attack = attack_message.split(",")
+        x_att = int(attack[0])
+        y_att = int(attack[1])
+        boards[currOpponent].strike(x_att, y_att)
+        response = boards[currOpponent].get_location_status(x_att, y_att) + "end"
+        sockets[currPlayer].send(response.encode(encoding='utf-8'))
+
+        sockets[currOpponent].send(attack_message.encode(encoding='utf-8'))
+
+        #switch players
+        temp = currPlayer
+        currPlayer = currOpponent
+        currOpponent = temp
+
 
 
 
