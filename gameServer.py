@@ -3,9 +3,26 @@ import sys
 import socket
 import threading
 
-def play_game(player1Socket: socket.socket, player1Address, player2Socket: socket.socket, player2Address):
-    player1Socket.send("1end".encode(encoding='utf-8'))
-    player2Socket.send("2end".encode(encoding='utf-8'))
+def setup_game(player1Socket: socket.socket, player1Address, player2Socket: socket.socket, player2Address):
+    sockets = []
+    sockets.append(player1Socket)
+    sockets.append(player2Socket)
+
+    sockets[0].send("1end".encode(encoding='utf-8'))
+    sockets[1].send("2end".encode(encoding='utf-8'))
+
+    playersInfo = []
+    playersInfo.append("")
+    playersInfo.append("")
+
+    def get_player_info(playerNum):
+        while playersInfo[playerNum].endswith("end") == False:
+            playersInfo[playerNum] = playersInfo[playerNum] + sockets[playerNum].recv(1024).decode(encoding='utf-8')
+        print("received info from player " + str(playerNum + 1))
+
+    for i in range(2):
+        receive_thread = threading.Thread(target=get_player_info, args=(i,), daemon=True)
+        receive_thread.start()
 
 def main():
 
@@ -41,8 +58,7 @@ def main():
             player2Socket, player2address = serversocket.accept()
             print("Got player two's connection")
 
-            gameThread = threading.Thread(target=play_game, args=(player1Socket, player1address, player2Socket, player2address,), daemon=True)
-
+            gameThread = threading.Thread(target=setup_game, args=(player1Socket, player1address, player2Socket, player2address,), daemon=True)
             gameThread.start()
 
     except KeyboardInterrupt:
