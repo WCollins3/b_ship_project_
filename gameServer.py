@@ -8,15 +8,15 @@ import threading
 #S = ship
 #H = hit location
 #M = miss location
-class board:
+class Board:
     def __init__(self):
         self.numShipLocations = 17
         #create empty board
         self.spaces = []
-        for i in range(10)
+        for i in range(10):
             self.spaces.append([])
             for j in range(10):
-                self.spaces(i).append("O")
+                self.spaces[i].append("O")
 
     #Put ship location on board
     def set_ship_location(self, x: int, y: int):
@@ -46,14 +46,31 @@ def setup_game(player1Socket: socket.socket, player1Address, player2Socket: sock
     playersInfo.append("")
     playersInfo.append("")
 
+    boards = []
+    boards.append(Board())
+    boards.append(Board())
+
     def get_player_info(playerNum):
         while playersInfo[playerNum].endswith("end") == False:
             playersInfo[playerNum] = playersInfo[playerNum] + sockets[playerNum].recv(1024).decode(encoding='utf-8')
         print("received info from player " + str(playerNum + 1))
 
+        #get ship locations from client message
+        ship_locations = []
+        for i in range(len(playersInfo[playerNum].split("+")) - 1):
+            elem = playersInfo[playerNum].split("+")[i]
+            x_val = int(elem[1])
+            y_val = int(elem[3])
+            ship_locations.append((x_val, y_val))
+
+        #set board locations
+        for loc in ship_locations:
+            boards[playerNum].set_ship_location(loc[0], loc[1])
+
     for i in range(2):
         receive_thread = threading.Thread(target=get_player_info, args=(i,), daemon=True)
         receive_thread.start()
+
 
 def main():
 
