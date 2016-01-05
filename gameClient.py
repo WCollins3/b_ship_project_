@@ -1,5 +1,50 @@
 import socket
 
+#board object
+#O = open ocean
+#S = ship
+#H = hit location
+#M = miss location
+class Board:
+    def __init__(self):
+        self.numShipLocations = 17
+        #create empty board
+        self.spaces = []
+        for i in range(10):
+            self.spaces.append([])
+            for j in range(10):
+                self.spaces[i].append("O")
+
+    #Put ship location on board
+    def set_ship_location(self, x: int, y: int):
+        self.spaces[x][y] = "S"
+
+    #Send hit or miss
+    def strike(self, x: int, y: int):
+        if(self.spaces[x][y] == "O" or self.spaces == "M"):
+            self.spaces[x][y] = "M"
+        else:
+            self.spaces[x][y] = "H"
+            self.numShipLocations -= 1
+
+    def set_hit(self, x: int, y: int):
+        self.spaces[x][y] = "H"
+
+    def set_miss(self, x: int, y: int):
+        self.spaces[x][y] = "M"
+
+    #return status of location
+    def get_location_status(self, x: int, y: int):
+        return self.spaces[x][y]
+
+    def print_board(self):
+        for j in range(10):
+            prntstr = ""
+            for i in range(10):
+                prntstr = prntstr + self.spaces[i][j] + " "
+            print(prntstr)
+            print(" ")
+
 class Ship:
     def __init__(self, size: int, x_location: int, y_location: int, direction):
         self.size = size
@@ -79,8 +124,60 @@ def main():
         for loc in boat.getShipLocations():
             loc_string = loc_string + "(" + str(loc[0]) + "," + str(loc[1]) + ")+"
     loc_string = loc_string + "end"
-
     client_socket.send(loc_string.encode(encoding='utf-8'))
+
+    print("Waiting on other player")
+
+    ready_message = ""
+    while ready_message.endswith("end") == False:
+        ready_message = ready_message + client_socket.recv(1024).decode(encoding='utf-8') #Game is ready
+    print("Game started")
+
+    playerNum = ready_message.split("end")[0]
+
+    myBoard = Board()
+    opponentsBoard = Board()
+
+    #put ships on myBoard
+    for s in ships:
+        for location in s.getShipLocations():
+            myBoard.set_ship_location(location[0], location[1])
+
+    def wait_for_turn():
+        server_message = ""
+        while server_message.endswith("end") == False:
+            server_message = server_message + client_socket.recv(1024).decode(encoding='utf-8')
+        if server_message == "winend":
+            print("You won")
+            return
+        if server_message == "loseend":
+            print("You lost")
+            return
+        else:
+            opponent_attack = server_message.split("end")[0]
+            opp_x = int(opponent_attack.split(",")[0])
+            opp_y = int(opponent_attack.split(",")[1])
+            myBoard.strike(opp_x, opp_y)
+            attack()
+
+    def attack():
+        print("Attack Board")
+        print(" ")
+        opponentsBoard.print_board()
+        print(" ")
+        print("Your Board")
+        print(" ")
+        myBoard.print_board()
+
+    if playerNum == "1":
+        attack()
+    else:
+        wait_for_turn()
+
+
+
+
+
 
 if __name__== '__main__':
     main()

@@ -50,6 +50,10 @@ def setup_game(player1Socket: socket.socket, player1Address, player2Socket: sock
     boards.append(Board())
     boards.append(Board())
 
+    playerReady = []
+    playerReady.append(False)
+    playerReady.append(False)
+
     def get_player_info(playerNum):
         while playersInfo[playerNum].endswith("end") == False:
             playersInfo[playerNum] = playersInfo[playerNum] + sockets[playerNum].recv(1024).decode(encoding='utf-8')
@@ -67,9 +71,33 @@ def setup_game(player1Socket: socket.socket, player1Address, player2Socket: sock
         for loc in ship_locations:
             boards[playerNum].set_ship_location(loc[0], loc[1])
 
+        playerReady[playerNum] = True
+
+        return
+
     for i in range(2):
         receive_thread = threading.Thread(target=get_player_info, args=(i,), daemon=True)
         receive_thread.start()
+
+    while True:
+        if(playerReady[0] == True and playerReady[1] == True):
+            gameThread = threading.Thread(target=playGame, args=(sockets[0], player1Address, sockets[1], player2Address, boards[0], boards[1]), daemon=True)
+            gameThread.start()
+            return
+
+def playGame(player1Socket: socket.socket, player1Address, player2Socket: socket.socket, player2Address, board1: Board, board2: Board):
+    sockets = []
+    sockets.append(player1Socket)
+    sockets.append(player2Socket)
+
+    boards = []
+    boards.append(board1)
+    boards.append(board2)
+
+    #send ready message
+    sockets[0].send("1end".encode(encoding='utf-8'))
+    sockets[1].send("2end".encode(encoding='utf-8'))
+
 
 
 def main():
