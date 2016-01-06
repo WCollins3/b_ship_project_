@@ -113,7 +113,7 @@ def playGame(player1Socket: socket.socket, player1Address, player2Socket: socket
         boards[currOpponent].strike(x_att, y_att)
         response = boards[currOpponent].get_location_status(x_att, y_att) + "end"
         sockets[currPlayer].send(response.encode(encoding='utf-8'))
-        if boards[currOpponent].get_board_health != 0:
+        if boards[0].get_board_health() != 0 and boards[1].get_board_health() != 0:
             sockets[currOpponent].send(attack_message.encode(encoding='utf-8'))
 
         #switch players

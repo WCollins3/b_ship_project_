@@ -159,6 +159,7 @@ def main():
             opp_y = int(opponent_attack.split(",")[1])
             myBoard.strike(opp_x, opp_y)
             attack()
+            return
 
     def attack():
         #show boards
@@ -190,6 +191,7 @@ def main():
             opponentsBoard.set_hit(int(attack_loc[0]), int(attack_loc[1]))
 
         wait_for_turn()
+        return
 
     if playerNum == "1":
         attack()
