@@ -113,13 +113,20 @@ def playGame(player1Socket: socket.socket, player1Address, player2Socket: socket
         boards[currOpponent].strike(x_att, y_att)
         response = boards[currOpponent].get_location_status(x_att, y_att) + "end"
         sockets[currPlayer].send(response.encode(encoding='utf-8'))
-
-        sockets[currOpponent].send(attack_message.encode(encoding='utf-8'))
+        if boards[currOpponent].get_board_health != 0:
+            sockets[currOpponent].send(attack_message.encode(encoding='utf-8'))
 
         #switch players
         temp = currPlayer
         currPlayer = currOpponent
         currOpponent = temp
+
+    if boards[0].get_board_health() == 0:
+        sockets[0].send("loseend".encode(encoding='utf-8'))
+        sockets[1].send("winend".encode(encoding='utf-8'))
+    else:
+        sockets[1].send("loseend".encode(encoding='utf-8'))
+        sockets[0].send("winend".encode(encoding='utf-8'))
 
 
 
